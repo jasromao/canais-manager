@@ -31,13 +31,12 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     python3 \
     python3-flask \
     openssh-client \
-    sshpass \
     openvpn \
     acl \
     rsync \
     git \
     imagemagick \
-    librsvg2-bin \
+    librsvg2-bin sshpass \
     curl \
     wget \
     tar \
@@ -59,6 +58,14 @@ echo "=== OBTER BASE DE PICONS ==="
 /usr/local/bin/atualizar-base-picons.sh
 [ -d /home/ubuntu/picons ] && chown -R ubuntu:ubuntu /home/ubuntu/picons
 
+echo "=== CHAVE SSH DA VPS ==="
+mkdir -p /home/ubuntu/.ssh
+chown ubuntu:ubuntu /home/ubuntu/.ssh
+chmod 700 /home/ubuntu/.ssh
+if [ ! -f /home/ubuntu/.ssh/id_rsa ]; then
+    sudo -u ubuntu ssh-keygen -t rsa -b 4096 -N "" -f /home/ubuntu/.ssh/id_rsa
+fi
+
 echo "=== PERMISSOES ==="
 chmod +x /usr/local/bin/sincronizar-box.sh 2>/dev/null || true
 chmod +x /usr/local/bin/atualizar-canais.sh 2>/dev/null || true
@@ -79,20 +86,6 @@ echo "=== PERMISSOES VPN CLIENTE ==="
 mkdir -p /etc/openvpn/client
 setfacl -m u:ubuntu:rwx /etc/openvpn/client
 [ -f /etc/openvpn/client/canais.conf ] && setfacl -m u:ubuntu:rw /etc/openvpn/client/canais.conf
-
-echo "=== CHAVE SSH DA VPS ==="
-mkdir -p /home/ubuntu/.ssh
-chown ubuntu:ubuntu /home/ubuntu/.ssh
-chmod 700 /home/ubuntu/.ssh
-
-if [ ! -f /home/ubuntu/.ssh/id_rsa ] || [ ! -f /home/ubuntu/.ssh/id_rsa.pub ]; then
-    rm -f /home/ubuntu/.ssh/id_rsa /home/ubuntu/.ssh/id_rsa.pub
-    sudo -u ubuntu ssh-keygen -t rsa -b 4096 -N "" -f /home/ubuntu/.ssh/id_rsa
-fi
-
-chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa /home/ubuntu/.ssh/id_rsa.pub
-chmod 600 /home/ubuntu/.ssh/id_rsa
-chmod 644 /home/ubuntu/.ssh/id_rsa.pub
 
 echo "=== SYSTEMD ==="
 systemctl daemon-reload
